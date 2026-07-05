@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@deepgram/sdk": "^4.11.3",
@@ -14,20 +14,20 @@
     "@radix-ui/react-switch": "^1.3.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "framer-motion": "^11.2.11",
+    "framer-motion": "^12.42.2",
     "groq-sdk": "^1.3.0",
-    "next": "14.2.4",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "tailwind-merge": "^2.3.0"
+    "next": "16.2.10",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.2",
     "@types/node": "^26.1.0",
-    "@types/react": "^18.3.31",
-    "@types/react-dom": "^18.3.7",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "14.2.4",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "16.2.10",
     "postcss": "^8.5.16",
     "prettier": "^3.9.4",
     "prettier-plugin-tailwindcss": "^0.8.0",

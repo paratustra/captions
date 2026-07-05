@@ -32,8 +32,12 @@ const Transcription = () => {
   const { setupMicrophone, microphone, startMicrophone, microphoneState } =
     useMicrophone();
 
-  const captionTimeout = useRef<ReturnType<typeof setTimeout>>();
-  const keepAliveInterval = useRef<ReturnType<typeof setInterval>>();
+  const captionTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const keepAliveInterval = useRef<ReturnType<typeof setInterval> | undefined>(
+    undefined,
+  );
 
   // Race guard: interim transcripts arrive faster than translations resolve.
   // We tag each request and only keep the newest, and abort superseded fetches.
@@ -97,14 +101,17 @@ const Transcription = () => {
     }
   }, []);
 
-  // Translate the current caption immediately when translation is switched on.
-  useEffect(() => {
-    if (autoTranslate && lastValidCaption) {
-      translateText(lastValidCaption);
-    }
-    // Only react to the toggle flipping on, not to every caption change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoTranslate]);
+  const handleAutoTranslateChange = useCallback(
+    (checked: boolean) => {
+      setAutoTranslate(checked);
+      // Translate the current caption immediately when switched on, instead of
+      // waiting for the next finalized segment.
+      if (checked && lastValidCaption) {
+        translateText(lastValidCaption);
+      }
+    },
+    [lastValidCaption, translateText],
+  );
 
   useEffect(() => {
     if (!microphone || !connection) return;
@@ -204,7 +211,7 @@ const Transcription = () => {
       <div className="mb-4 h-8">
         <ToggleSwitch
           checked={autoTranslate}
-          onCheckedChange={setAutoTranslate}
+          onCheckedChange={handleAutoTranslateChange}
         />
       </div>
       <div
