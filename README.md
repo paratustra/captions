@@ -33,7 +33,7 @@ Browser mic ──stream──▶ Deepgram (WebSocket) ──transcript──▶
 
 ## Getting started
 
-Requires Node.js 18.18+ and [pnpm](https://pnpm.io).
+Requires Node.js 20.9+ and [pnpm](https://pnpm.io).
 
 1. Install dependencies:
 
