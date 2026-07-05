@@ -10,10 +10,13 @@ import { createContext, useCallback, useContext, useState } from "react";
 
 const DeepgramContext = createContext(undefined);
 
-const getApiKey = async () => {
+const getToken = async () => {
   const response = await fetch("/api/authenticate", { cache: "no-store" });
-  const result = await response.json();
-  return result.key;
+  if (!response.ok) {
+    throw new Error("Failed to obtain Deepgram token");
+  }
+  const { access_token: accessToken } = await response.json();
+  return accessToken;
 };
 
 const DeepgramContextProvider = ({ children }) => {
@@ -30,8 +33,10 @@ const DeepgramContextProvider = ({ children }) => {
    * @returns {Promise<void>} A Promise that resolves when the connection is established.
    */
   const connectToDeepgram = useCallback(async (options, endpoint) => {
-    const key = await getApiKey();
-    const deepgram = createClient(key);
+    // Must pass `accessToken` (Bearer scheme) — a raw string is treated as an
+    // API key (Token scheme) and the WebSocket handshake fails.
+    const accessToken = await getToken();
+    const deepgram = createClient({ accessToken });
 
     const conn = deepgram.listen.live(options, endpoint);
 
