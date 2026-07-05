@@ -1,44 +1,95 @@
 # Real-time captions
 
-This project implements a real-time speech-to-text transcription service with optional translation capabilities using React, Next.js, Deepgram for speech recognition, and Groq for translation.
+Real-time speech-to-text captions in the browser, with optional live
+translation to English. Audio is streamed to [Deepgram](https://deepgram.com)
+for transcription; finalized segments are optionally translated with
+[Groq](https://groq.com).
 
-## Features
+## How it works
 
-- Real-time speech-to-text transcription
-- Optional automatic translation to English
-- Toggle switch for enabling/disabling translation
+```
+Browser mic ──stream──▶ Deepgram (WebSocket) ──transcript──▶ caption on screen
+     │                                                            │
+     │  short-lived token                          final segment  │ (if translation on)
+     ▼                                                            ▼
+/api/authenticate  ◀── mints token with          /api/translate ──▶ Groq ──▶ English
+  (Deepgram key,        DEEPGRAM_API_KEY             (GROQ_API_KEY)
+   server-side)
+```
 
-## Technologies Used
+- The **Deepgram master key never reaches the browser.** `/api/authenticate`
+  mints a short-lived scoped token (`auth.grantToken`) server-side, and the
+  client connects with that token (Bearer scheme).
+- Only **finalized** transcript segments are sent for translation, and stale
+  translations are aborted, so a slow response can't overwrite a newer caption.
 
-- React
-- Next.js
-- Deepgram API for speech recognition
-- Groq API for translation
-- Framer Motion for animations
-- Tailwind CSS for styling
+## Tech stack
 
-## Setup
+- Next.js (App Router) + React + TypeScript
+- Deepgram JS SDK — live speech-to-text
+- Groq SDK — translation (`openai/gpt-oss-20b`)
+- Framer Motion — caption animation
+- Tailwind CSS + Radix UI
 
-1. Clone the repository
-2. Install dependencies: `pnpm install`
-3. Set up environment variables:
-   - `DEEPGRAM_API_KEY`: Your Deepgram API key
-   - `GROQ_API_KEY`: Your Groq API key
-4. Run the development server: `pnpm run dev`
+## Getting started
 
-## API Routes
+Requires Node.js 18.18+ and [pnpm](https://pnpm.io).
 
-- `/api/authenticate`: Provides the Deepgram API key to the client
-- `/api/translate`: Handles text translation using the Groq API
+1. Install dependencies:
+
+   ```bash
+   pnpm install
+   ```
+
+2. Create `.env.local` from the example and add your keys:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   | Variable           | Purpose                                                   |
+   | ------------------ | --------------------------------------------------------- |
+   | `DEEPGRAM_API_KEY` | Server-side only. Needs **Member+** scope to mint tokens. |
+   | `GROQ_API_KEY`     | Server-side only. Used for translation.                   |
+
+   Get keys from the [Deepgram console](https://console.deepgram.com/) and
+   [Groq console](https://console.groq.com/keys).
+
+3. Run the dev server and open <http://localhost:3000>:
+
+   ```bash
+   pnpm dev
+   ```
+
+4. Grant microphone access when prompted and start speaking.
 
 ## Usage
 
-1. Start the application
-2. Grant microphone access when prompted
-3. Speak into the microphone to see real-time transcription
-4. Toggle the switch to enable/disable automatic translation to English
+- Speak into the microphone to see live captions.
+- Toggle the switch to translate captions to English in real time.
 
-## Notes
+## Configuration
 
-- The transcription is set up for Spanish (`es-ES`) by default. Modify the language parameter in `connectToDeepgram` to change the input language.
-- The translation service uses Groq's `gemma-7b-it` model for English translation.
+- **Input language** — the transcription language is set in
+  `app/transcription.tsx` (`connectToDeepgram({ model: "nova-2", language: "es" })`).
+  Change `language` (and `model` if needed) for other languages; see the
+  [Deepgram models & languages](https://developers.deepgram.com/docs/models-languages-overview)
+  matrix.
+- **Translation model** — set in `app/api/translate/route.ts`
+  (`TRANSLATION_MODEL`). See the [Groq models list](https://console.groq.com/docs/models).
+
+## API routes
+
+| Route               | Method | Description                                         |
+| ------------------- | ------ | --------------------------------------------------- |
+| `/api/authenticate` | `GET`  | Mints a short-lived Deepgram token for the browser. |
+| `/api/translate`    | `POST` | Translates `{ text }` to English via Groq.          |
+
+## Scripts
+
+```bash
+pnpm dev      # start the dev server
+pnpm build    # production build
+pnpm start    # run the production build
+pnpm lint     # lint
+```
