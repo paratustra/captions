@@ -14,7 +14,7 @@ export async function GET() {
   if (!apiKey) {
     return Response.json(
       { error: "DEEPGRAM_API_KEY is not configured" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 

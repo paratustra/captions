@@ -12,12 +12,12 @@ const SYSTEM_PROMPT =
   "You are a translation engine. Translate the user's text to English. " +
   "Reply with the translation only — no explanations, quotes, or extra text.";
 
-export async function POST(request) {
+export async function POST(request: Request) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     return Response.json(
       { error: "GROQ_API_KEY is not configured" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -31,7 +31,7 @@ export async function POST(request) {
   if (typeof text !== "string" || text.trim() === "") {
     return Response.json(
       { error: "`text` must be a non-empty string" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
